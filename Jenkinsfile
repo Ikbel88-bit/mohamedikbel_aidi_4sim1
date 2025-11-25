@@ -1,53 +1,64 @@
 pipeline {
     agent any
 
+    triggers {
+        githubPush()
+    }
+
     environment {
-        DOCKER_CRED = 'DOCKER_HUB_CRED'
-        SPRING_IMAGE_NAME = 'ikbelabidi/student-management'
-        SPRING_IMAGE_TAG = 'latest'
+        DOCKERHUB_USER = 'ikbelabidi'          // 👉 ton username Docker Hub
+        IMAGE_NAME = 'student-management'      // 👉 nom de l’image Docker
     }
 
     stages {
-        stage('Checkout Code') {
+
+        stage('Git Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/Ikbel88-bit/mohamedikbel_aidi_4sim1.git'
+                git branch: 'main', 
+                    url: 'https://github.com/Ikbel88-bit/mohamedikbel_aidi_DevOps'
             }
         }
 
-        stage('Maven Build') {
+        stage('Maven Compile') {
             steps {
-                sh 'mvn clean package'
+                sh 'mvn compile'
+            }
+        }
+
+        stage('Maven Package') {
+            steps {
+                sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${SPRING_IMAGE_NAME}:${SPRING_IMAGE_TAG} ."
+                sh """
+                    docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:latest .
+                """
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Docker Login') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: "${DOCKER_CRED}", 
-                    usernameVariable: 'DOCKER_USERNAME', 
-                    passwordVariable: 'DOCKER_PASSWORD')]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'DOCKER_HUB_CRED',   // 👉 ton credentials Jenkins
+                        usernameVariable: 'USER',
+                        passwordVariable: 'PASS'
+                    )
+                ]) {
                     sh """
-                        echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin
-                        docker push ${SPRING_IMAGE_NAME}:${SPRING_IMAGE_TAG}
+                        echo "$PASS" | docker login -u "$USER" --password-stdin
                     """
                 }
             }
         }
-    }
 
-    post {
-        success {
-            echo "Pipeline terminé avec succès ! L'image Docker est sur Docker Hub."
-        }
-        failure {
-            echo "Le pipeline a échoué. Vérifie les logs pour plus de détails."
+        stage('Docker Push') {
+            steps {
+                sh "docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:latest"
+            }
         }
     }
 }
