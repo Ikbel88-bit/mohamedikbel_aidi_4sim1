@@ -6,8 +6,8 @@ pipeline {
     }
 
     environment {
-        DOCKERHUB_USER = 'ikbelabidi'          // 👉 ton username Docker Hub
-        IMAGE_NAME = 'student-management'      // 👉 nom de l’image Docker
+        DOCKERHUB_USER = 'ikbelabidi'        
+        IMAGE_NAME = 'student-management'      
     }
 
     stages {
@@ -15,7 +15,7 @@ pipeline {
         stage('Git Checkout') {
             steps {
                 git branch: 'main', 
-                    url: 'https://github.com/Ikbel88-bit/mohamedikbel_aidi_DevOps'
+                    url: 'https://github.com/Ikbel88-bit/mohamedikbel_aidi_4sim1.git'
             }
         }
 
