@@ -2,10 +2,9 @@ pipeline {
     agent any
 
     environment {
-        // L'ID des credentials Docker Hub que tu as créé dans Jenkins
         DOCKER_CRED = 'DOCKER_HUB_CRED'
-        IMAGE_NAME = 'ikbelabidi/student-management'
-        IMAGE_TAG = 'latest'
+        SPRING_IMAGE_NAME = 'ikbelabidi/student-management'
+        SPRING_IMAGE_TAG = 'latest'
     }
 
     stages {
@@ -18,14 +17,13 @@ pipeline {
 
         stage('Maven Build') {
             steps {
-                // Génère le JAR nécessaire pour Docker
                 sh 'mvn clean package'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                sh "docker build -t ${SPRING_IMAGE_NAME}:${SPRING_IMAGE_TAG} ."
             }
         }
 
@@ -37,7 +35,7 @@ pipeline {
                     passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh """
                         echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin
-                        docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                        docker push ${SPRING_IMAGE_NAME}:${SPRING_IMAGE_TAG}
                     """
                 }
             }
