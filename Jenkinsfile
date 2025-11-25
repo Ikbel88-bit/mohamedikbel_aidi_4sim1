@@ -18,7 +18,8 @@ pipeline {
 
         stage('Maven Build') {
             steps {
-                sh 'mvn clean compile'
+                // Génère le JAR nécessaire pour Docker
+                sh 'mvn clean package'
             }
         }
 
